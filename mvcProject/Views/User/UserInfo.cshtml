@@ -1,0 +1,46 @@
+﻿
+@{
+    Layout = "/views/_MainPage.cshtml";
+}
+@model mvcProject.Models.user
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>UserInfo</title>
+</head>
+<body>
+    <input type="hidden" value="@Model.ID" id="id" />
+    <div> 
+        <label>用户名</label>
+        <input type="text" id="userid" value="@Model.USERID"/>
+    </div>
+    <div>
+        <label>密码</label>
+        <input type="text" id="password" value="@Model.PASSWORD"/>
+    </div>
+    <div>
+        <button onclick="save()">保存</button>
+    </div>
+    <script>
+        function save() {
+            $.ajax({
+                url: 'userinfo',
+                data: { userid: $("#userid").val(), password: $("#password").val(), id: $("#id").val() },
+                type: 'post',
+                async: true,
+                dataType: 'json',
+                success: function (result) {
+                    if (result.message == "") {
+                        parent.layer.closeAll();
+                    }
+                    else {
+                        layer.msg("错误信息：" + result.message);
+                    }
+                }
+            })
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+﻿
+@{
+    Layout = "/views/_MainPage.cshtml";
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <button class="btn btn-default" onclick="add()">新建</button>
+        </div>
+        <div class="row">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>
+                            序号
+                        </th>
+                        <th>
+                            用户名
+                        </th>
+                        <th>
+                            密码
+                        </th>
+                        <th>
+                            状态
+                        </th>
+                        <th>
+                            操作
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="content"></tbody>
+            </table>
+            <div id="Pagination" class="pull-right">
+            </div>
+        </div>
+    </div>
+    <script>
+        $(function () {
+            getUserList(0);
+        })
+        function getUserList(pageIndex)
+        {
+            $.ajax({
+                url: "/user/getUserList",
+                type: 'Post',
+                data:{pageIndex:pageIndex},
+                async: true,
+                dataType: 'json',
+                success: function (result) {
+                    if (result.message == "") {
+                        var str = "";
+                        var userList =result.data;
+                        $.each(userList, function (i, item) {
+                            str += "<tr class="+(item["ISVALID"] == "0"?"danger":"success")+"><td>" + (i + 1) + "</td><td>" + item["USERID"] + "</td><td>" + item["PASSWORD"] + "</td><td>" + (item["ISVALID"] == "0" ? "无效" : "有效") + "</td><td><a href=\"javascript:void(0);\" onclick=\"edit(" + item["ID"] + ")\">编辑</a>|<a href=\"javascript:void(0);\" onclick=\"deleteUser(" + item["ID"] + ")\">删除</a></td></tr>";
+                        })
+                        $("#content").html(str);
+                        var total = result.count;
+                        $("#Pagination").pagination(total, {
+                            callback: getUserList,
+                            isJump: false,
+                            prev_text: '< 上一页',
+                            next_text: '下一页 >',
+                            items_per_page: 10,
+                            num_display_entries: 7,
+                            link_to: "javascript:;",
+                            ellipse_text: "...",
+                            current_page: pageIndex,
+                            num_edge_entries: 2
+                        });
+                    }
+                    else {
+                        layer.msg("错误信息：" + result.message);
+                    }
+                }
+            })
+        }
+        function add() {
+            layer.open({
+                type: 2,
+                area: ['700px', '450px'],
+                fixed: false, //不固定
+                maxmin: true,
+                content: 'UserInfo',
+                end: function () {
+                    getUserList(0);
+                }
+            });
+        }
+        function edit(id) {
+            layer.open({
+                type: 2,
+                area: ['700px', '450px'],
+                fixed: false, //不固定
+                maxmin: true,
+                content: 'UserInfo?id=' + id,
+                end: function () {
+                    getUserList(0);
+                }
+            });
+        }
+        function deleteUser(id)
+        {
+            $.ajax({
+                url: 'deleteUser',
+                type: 'post',
+                async: true,
+                dataType: 'json',
+                data: { id: id },
+                success: function (result) {
+                    if (result.message == "") {
+                        getUserList(0);
+                    }
+                    else {
+                        layer.msg("错误信息：" + result.message);
+                    }
+                }
+            })
+        }
+    </script>
+</body>
+</html>
